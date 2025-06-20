@@ -48,3 +48,48 @@ https://lead-whistle-2dd.notion.site/Category-0-The-Android-Framework-2106d503b2
 - 앱의 시작 시점에 단 한 번 초기화되어 생명주기 전체동안 유지됨.
 - Activity와 달리 앱이 시작될 떄 생성되어 종료될 때까지 유지되며, scope가 앱 전역임.
 - 공통 리소스를 초기화하거나 전역 설정할 때 사용함.
+
+## Q) 6. What is the purpose of the AndroidManifest file?
+- 앱의 구성 요소, 권한, 요구사항 등을 OS에 알려주는 핵심 설정 파일
+- Activity, Service, BroadcastReceiver 등은 반드시 이 파일에 등록해야 사용 가능
+- 권한 선언, 기능 요구사항, 인텐트 필터, 테마, API 레벨 등을 정의함.
+
+## Q) 7. Describe the Activity lifecycle
+- onCreate → onStart → onResume → onPause() → onStop() → onDestory()
+- 액티비티가 중단되었다가 다시 시작될 때는 onRestart()를 거쳐 onStart()를 실행.
+- 즉시 반응해야 할 작업은 onPause에서, 자원 절약 목적이면 onStop()에서 처리
+
+## Q) 8. Describe the Fragment lifecycle
+- Fragment는 Activity와 별도 생명주기를 가지며, View는 그보다 짧은 생명주기를 가짐.
+- UI 초기화는 onCreateView(), 리소스 해제는 onDestroyView()에서 수행
+- viewLifecycleOwner는 View 생명주기에 맞춰 LiveData를 안전하게 관찰 가능
+- ViewBinding 사용 시 _binding = null로 명시적 해제 필요
+- fragmentManager는 Activity 수준, childFragmentManager는 Fragment 내부에서 자식 Fragment 관리용
+- 생명주기 구분을 통해 메모리 누수 방지 및 UI 일관성 유지 가능
+
+## Q) 9. What is Service?
+- `Service`는 UI 없이 백그라운드 작업을 수행하는 컴포넌트로, 음악 재생, 파일 다운로드 등에 사용됨.
+- `Started Service`는 `startService()`로 시작되며, 명시적으로 `stopSelf()` 또는 `stopService()` 호출 전까지 계속 실행됨.
+- `Bound Service`는 `bindService()`로 컴포넌트에 바인딩되어 동작하며, 모든 클라이언트가 연결 해제 시 자동 종료됨.
+- `Foreground Service`는 알림(Notification)을 필수로 표시하며, 사용자에게 인지 가능한 작업(위치 추적 등)에 적합함.
+- Started Service의 생명주기: `onCreate()` → `onStartCommand()` → `onDestroy()`
+- Bound Service의 생명주기: `onCreate()` → `onBind()` → (선택) `onUnbind()` → `onDestroy()`
+- WorkManager는 즉시 실행이 필요 없는 작업에 적합하며, 서비스보다 자원 효율적임.
+- 서비스 종료 시에는 `onDestroy()`에서 리소스를 정리해야 메모리 누수를 방지할 수 있음.
+
+## Q) 10. What is BroadcastReceiver?
+- **BroadcastReceiver**: 시스템/앱 이벤트 수신용 컴포넌트
+- **종류**:
+  - System Broadcast (OS가 발생)
+  - Custom Broadcast (앱이 직접 발생)
+- **등록 방식**:
+  - 정적 등록 → Manifest (앱 꺼져도 수신)
+  - 동적 등록 → 코드 (앱 실행 중만 수신, 해제 필요)
+- **주의사항**:
+  - Android 8.0+ 백그라운드 제한
+  - 동적 등록 시 `unregisterReceiver()` 필수
+  - 민감 정보 포함 시 권한 설정 필요
+- **사용 예**:
+  - 네트워크 변화 감지
+  - 배터리 상태, 충전 상태 반응
+  - 커스텀 이벤트 처리 (알람 등)
