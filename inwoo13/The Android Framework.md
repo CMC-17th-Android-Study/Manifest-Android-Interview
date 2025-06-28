@@ -93,3 +93,52 @@ https://lead-whistle-2dd.notion.site/Category-0-The-Android-Framework-2106d503b2
   - 네트워크 변화 감지
   - 배터리 상태, 충전 상태 반응
   - 커스텀 이벤트 처리 (알람 등)
+
+## Q) 11. What is the purpose of ContentProvider, and how does it facilitate secure data sharing between applications?
+- `ContentProvider`는 구조화된 데이터를 **앱 간 안전하게 공유**하기 위한 컴포넌트입니다.
+- **URI(authority, path, id)**를 통해 데이터를 조회·삽입·수정·삭제합니다.
+- `ContentResolver`가 ContentProvider와 상호작용하여 데이터에 접근합니다.
+- 보통 SQLite, 파일, 네트워크 등 내부 데이터 소스를 추상화합니다.
+- `Application.onCreate()`보다 먼저 `onCreate()`가 호출되어 **초기화 용도로도 활용**됩니다.
+- 예: Firebase는 ContentProvider로 자동 초기화를 수행합니다.
+- Jetpack App Startup도 `InitializationProvider`로 컴포넌트 초기화를 처리합니다.
+- 보안 제어와 데이터 은닉이 가능하여 **파일 공유나 시스템 연동에도 사용**됩니다.
+
+## Q) 12. How to handle configuration changes
+- Android는 구성 변경 시 기본적으로 Activity를 재시작하여 UI 상태가 손실될 수 있음
+- `onSaveInstanceState()`와 `ViewModel`을 사용하면 UI 상태를 안전하게 유지 가능
+- `ViewModel`은 구성 변경에도 살아남아 데이터 손실 없이 유지됨
+- `android:configChanges`를 사용하면 특정 구성 변경을 앱이 직접 처리할 수 있음
+- 이때 `onConfigurationChanged()`를 오버라이드하여 UI를 수동으로 조정함
+- Jetpack Compose에서는 `rememberSaveable`로 상태를 저장
+- Navigation 컴포넌트를 쓰면 back stack 유지도 자동으로 처리됨
+- 구성 의존 데이터는 피하고 ViewModel 등으로 분리하는 것이 권장됨
+
+## Q) 13. How Android handles memory management, and how do you avoid memory leaks?
+- Android는**GC(Dalvik/ART)**로 사용하지 않는 객체를 자동 회수해 메모리를 관리함
+- 하지만 **남아 있는 참조**로 인해 메모리 누수가 발생할 수 있으므로 주의 필요
+- **ViewModel, LiveData, Flow** 등 **Lifecycle-aware 컴포넌트**로 리소스를 안전하게 관리
+- **Context나 View를 static으로 참조하지 말고**, ApplicationContext를 적절히 사용
+- **리스너, 콜백, BroadcastReceiver**는 생명주기에 맞게 명시적으로 해제
+- `Cursor`, `Stream`, `DB` 연결 등은 **명시적으로 close() 호출** 필요
+- **LeakCanary**, **Android Studio Memory Profiler** 등을 활용해 누수 탐지 및 분석
+- Fragment 간 참조는 `onDestroyView()`에서 정리하여 메모리 유지 방지
+
+## Q) 14. What are the main causes of ANR erros, and how can you prevent them from occuring?
+- **ANR**은 UI 스레드가 5초 이상 차단될 때 발생하며, 사용자 상태 손실과 앱 강제 종료로 이어짐
+- 원인: **무거운 계산**, **네트워크/DB 작업**, **Thread.sleep()** 등 UI 스레드에서의 차단 작업
+- 해결: **Coroutine, Executor, WorkManager** 등으로 작업을 **백그라운드로 이동**
+- 데이터는 **Paging**으로 나눠 불러오고, 구성 변경 시 **ViewModel**로 상태 유지
+- **StrictMode**, **Logcat**, **Android Vitals**, **Profiler**로 ANR 감지 및 진단 가능
+- **Thread.sleep() 대신 Handler.postDelayed()**, **UI 블로킹 호출은 피하기**
+- **Profiler 도구로 CPU, 메모리, 네트워크 병목 식별**
+
+## Q) 15. How do you handle deep links?
+- 딥링크(Deep Link)는 외부 URL 등을 통해 앱의 특정 화면으로 직접 이동할 수 있게 하는 기능입니다.
+- `AndroidManifest.xml`에 intent-filter로 URL 패턴을 정의하고, Activity에서 `intent.data`를 처리해야 합니다.
+- URL 쿼리 파라미터를 추출해 해당 ID나 상태에 따라 화면을 전환할 수 있습니다.
+- `adb shell am start -a VIEW -d "..."` 명령으로 딥링크 동작을 시뮬레이션할 수 있습니다.
+- **Custom Scheme**(예: `myapp://`)도 가능하지만, 호환성 측면에선 **HTTPS URL**이 권장됩니다.
+- **App Links**를 설정하면 브라우저 대신 앱이 자동으로 실행되며, 도메인 검증이 필요합니다.
+- **예외 처리 및 fallback**도 구현해 링크 데이터 누락/오류 시 앱이 안정적으로 동작하도록 해야 합니다.
+- 테스트는 ADB, 브라우저, Deep Link Tester 앱, App Links Assistant 도구 등을 활용해 전방위적으로 확인합니다.
