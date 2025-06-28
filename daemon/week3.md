@@ -30,8 +30,6 @@ ContentProvider를 생성하려면 ContentProvider를 서브클래스화하고 �
 **그림 36. MyContentProvider.kt**
 
 ```kotlin
-
-kotlin
 class MyContentProvider : ContentProvider() {
 
     private lateinit var database: SQLiteDatabase
@@ -69,7 +67,6 @@ class MyContentProvider : ContentProvider() {
         return "vnd.android.cursor.dir/vnd.com.example.myapp.users"
     }
 }
-
 ```
 
 ## ContentProvider 등록
@@ -79,14 +76,11 @@ ContentProvider를 다른 앱에서 액세스할 수 있도록 하려면 Android
 **그림 37. AndroidManifest.xml**
 
 ```xml
-
-xml
 <provider
     android:name=".MyContentProvider"
     android:authorities="com.example.myapp.provider"
     android:exported="true"
     android:grantUriPermissions="true" />
-
 ```
 
 ## ContentProvider에서 데이터 액세스
@@ -96,8 +90,6 @@ xml
 **그림 38. ContentProvider에서 데이터 액세스**
 
 ```kotlin
-
-kotlin
 val contentResolver = context.contentResolver
 
 // 데이터 쿼리
@@ -115,7 +107,6 @@ val values = ContentValues().apply {
     put("email", "johndoe@example.com")
 }
 contentResolver.insert(Uri.parse("content://com.example.myapp.provider/users"), values)
-
 ```
 
 ## ContentProvider의 사용 사례
@@ -162,8 +153,6 @@ ContentProvider의 onCreate() 메서드는 Application.onCreate() 메서드보�
 다음은 Firebase의 구현 예시입니다:
 
 ```java
-
-java
 public class FirebaseInitProvider extends ContentProvider {
 /** Called before{@linkApplication#onCreate()}. */
     @Override
@@ -181,14 +170,11 @@ public class FirebaseInitProvider extends ContentProvider {
         }
     }
 }
-
 ```
 
 FirebaseInitProvider는 아래 코드와 같이 XML 파일에 등록됩니다:
 
 ```xml
-
-xml
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 <!--Although the *SdkVersion is captured in gradle build files, this is required for
@@ -203,7 +189,6 @@ xml
             android:initOrder="100" />
     </application>
 </manifest>
-
 ```
 
 이 패턴은 필수 리소스나 라이브러리가 앱의 라이프사이클 초기에 자동으로 초기화되도록 보장하여 더 깔끔하고 모듈식 설계를 제공합니다. ContentProvider의 또 다른 주목할 만한 사용 사례는 Jetpack App Startup27 라이브러리에 있으며, 이는 애플리케이션 시작 시 컴포넌트를 초기화하는 간단하고 효율적인 방법을 제공합니다. 내부 구현은 InitializationProvider라는 클래스를 사용하며, 이는 ContentProvider를 활용하여 Initializer 인터페이스를 구현하는 모든 사전 정의된 클래스를 초기화합니다. 이는 초기화 로직이 Application.onCreate() 메서드가 호출되기 전에 처리되도록 보장합니다.
@@ -211,8 +196,6 @@ xml
 다음은 App Startup 라이브러리의 백본 역할을 하는 InitializationProvider의 내부 구현입니다:
 
 ```java
-
-java
 /**
  * The{@linkContentProvider} which discovers{@linkInitializer}s in an application and
  * initializes them before{@linkApplication#onCreate()}.
@@ -236,7 +219,6 @@ public class InitializationProvider extends ContentProvider {
         return true;
     }
 }
-
 ```
 
 이 구현의 onCreate() 메서드는 AppInitializer.getInstance(context).discoverAndInitialize()를 호출하여 Application 라이프사이클이 시작되기 전에 등록된 모든 Initializer 구현을 자동으로 발견하고 초기화합니다. 이는 Application.onCreate() 메서드를 복잡하게 만들지 않고도 앱 컴포넌트를 효율적으로 초기화할 수 있도록 보장합니다.
@@ -321,10 +303,7 @@ android:configChanges 속성의 영향:
 3. **특정 구성 변경만 처리하는 경우**:
     
     ```xml
-    
-    xml
-    android:configChanges="orientation|screenSize|keyboardHidden"
-    
+        android:configChanges="orientation|screenSize|keyboardHidden"
     ```
     
 
@@ -337,8 +316,6 @@ android:configChanges 속성의 영향:
 **구현 예시**:
 
 ```kotlin
-
-kotlin
 override fun onConfigurationChanged(newConfig: Configuration) {
     super.onConfigurationChanged(newConfig)
 
@@ -348,7 +325,6 @@ override fun onConfigurationChanged(newConfig: Configuration) {
 // 세로 모드 UI 조정
     }
 }
-
 ```
 
 # Q) 13. Android가 메모리 관리를 어떻게 처리하며, 메모리 누수를 어떻게 방지하는가?
@@ -403,8 +379,6 @@ Android의 메모리 관리는 효율적이지만 개발자가 메모리 누수�
 1. **올바른 Context 사용**:
 
 ```kotlin
-
-kotlin
 // 잘못된 예
 class MySingleton {
     companion object {
@@ -424,14 +398,11 @@ class MySingleton {
         }
     }
 }
-
 ```
 
 1. **WeakReference 활용**:
 
 ```kotlin
-
-kotlin
 class MyAsyncTask(activity: MainActivity) : AsyncTask<Void, Void, String>() {
     private val activityRef = WeakReference(activity)
 
@@ -440,19 +411,15 @@ class MyAsyncTask(activity: MainActivity) : AsyncTask<Void, Void, String>() {
         activity?.updateUI(result)
     }
 }
-
 ```
 
 1. **리소스 자동 관리**:
 
 ```kotlin
-
-kotlin
 // use 함수로 자동 리소스 해제
 context.assets.open("file.txt").use { inputStream ->
 // 자동으로 close() 호출됨
 }
-
 ```
 
 **Q) Android의 가비지 컬렉션 메커니즘은 어떻게 작동하며, 개발자가 애플리케이션에서 메모리 누수를 감지하고 수정하는 데 사용할 수 있는 도구는 무엇인가?**
@@ -474,13 +441,10 @@ context.assets.open("file.txt").use { inputStream ->
 1. **LeakCanary**:
 
 ```kotlin
-
-kotlin
 // build.gradle
 debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.12'
 
 // 자동으로 메모리 누수 감지 및 알림// Activity, Fragment, ViewModel 등의 누수 자동 감지
-
 ```
 
 1. **Android Studio Memory Profiler**:
@@ -496,8 +460,6 @@ debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.12'
 **실무 활용법:**
 
 ```kotlin
-
-kotlin
 // 개발 단계에서 메모리 모니터링
 class MyApplication : Application() {
     override fun onCreate() {
@@ -508,7 +470,6 @@ class MyApplication : Application() {
         }
     }
 }
-
 ```
 
 ---
@@ -550,20 +511,15 @@ ANR (Application Not Responding)은 앱의 메인 스레드(UI 스레드)가 차
 2. **Systrace/Perfetto 사용**:
 
 ```bash
-
-bash
 # Systrace로 시스템 레벨 분석
 python systrace.py -t 10 -o trace.html sched freq idle am wm gfx view
 
 # 메인 스레드 블로킹 구간 시각화
-
 ```
 
 1. **StrictMode 활용**:
 
 ```kotlin
-
-kotlin
 class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
@@ -580,19 +536,15 @@ class MyApplication : Application() {
         }
     }
 }
-
 ```
 
 1. **ANR 로그 분석**:
 
 ```bash
-
-bash
 # ANR 발생 시 traces.txt 파일 확인
 adb pull /data/anr/traces.txt
 
 # 메인 스레드 스택 트레이스에서 블로킹 지점 식별
-
 ```
 
 **성능 개선 방법:**
@@ -600,8 +552,6 @@ adb pull /data/anr/traces.txt
 1. **비동기 작업 패턴**:
 
 ```kotlin
-
-kotlin
 // Coroutines 활용
 class MyViewModel : ViewModel() {
     fun loadData() {
@@ -619,14 +569,11 @@ class MyViewModel : ViewModel() {
         }
     }
 }
-
 ```
 
 1. **RecyclerView 최적화**:
 
 ```kotlin
-
-kotlin
 // ViewHolder 패턴과 DiffUtil 사용
 class MyAdapter : ListAdapter<Item, MyViewHolder>(DiffCallback()) {
 // 효율적인 리스트 업데이트
@@ -637,20 +584,16 @@ class MyAdapter : ListAdapter<Item, MyViewHolder>(DiffCallback()) {
             oldItem == newItem
     }
 }
-
 ```
 
 1. **이미지 로딩 최적화**:
 
 ```kotlin
-
-kotlin
 // Glide/Coil 활용한 비동기 이미지 로딩
 Glide.with(context)
     .load(imageUrl)
     .placeholder(R.drawable.placeholder)
     .into(imageView)
-
 ```
 
 ---
@@ -666,8 +609,6 @@ Glide.with(context)
 **그림 39. AndroidManifest.xml**
 
 ```xml
-
-xml
 <activity android:name=".MyDeepLinkActivity">
     <intent-filter>
         <action android:name="android.intent.action.VIEW" />
@@ -679,7 +620,6 @@ xml
             android:pathPrefix="/deepLink" />
     </intent-filter>
 </activity>
-
 ```
 
 - **android:scheme**: URL 스키마를 지정합니다 (예: https).
@@ -695,8 +635,6 @@ xml
 **그림 40. MyDeepLinkActivity.kt**
 
 ```kotlin
-
-kotlin
 class MyDeepLinkActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -720,7 +658,6 @@ class MyDeepLinkActivity : AppCompatActivity() {
         }
     }
 }
-
 ```
 
 ## 3단계: 딥 링크 테스트
@@ -728,12 +665,9 @@ class MyDeepLinkActivity : AppCompatActivity() {
 딥 링크를 테스트하려면 아래 adb 명령을 사용할 수 있습니다:
 
 ```bash
-
-bash
 adb shell am start -a android.intent.action.VIEW \
 -d "https://example.com/deepLink?id=123" \
 com.example.myapp
-
 ```
 
 이 명령은 딥 링크를 시뮬레이션하고 앱을 열어서 처리하도록 합니다.
@@ -758,8 +692,6 @@ com.example.myapp
 1. **ADB 명령어 활용**:
 
 ```bash
-
-bash
 # 기본 딥 링크 테스트
 adb shell am start \
     -W -a android.intent.action.VIEW \
@@ -777,14 +709,11 @@ adb shell am start \
     -W -a android.intent.action.VIEW \
     -d "https://example.com/product/123?category=electronics&ref=homepage" \
     com.example.myapp
-
 ```
 
 1. **웹 브라우저를 통한 테스트**:
 
 ```html
-
-html
 <!-- 테스트용 HTML 파일 생성 -->
 <!DOCTYPE html>
 <html>
@@ -794,7 +723,6 @@ html
     <a href="myapp://settings">Open App Settings</a>
 </body>
 </html>
-
 ```
 
 1. **이메일/메시지 앱 테스트**:
@@ -806,8 +734,6 @@ html
 1. **Intent 데이터 로깅**:
 
 ```kotlin
-
-kotlin
 class DeepLinkActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -827,14 +753,11 @@ class DeepLinkActivity : AppCompatActivity() {
         }
     }
 }
-
 ```
 
 1. **매니페스트 검증**:
 
 ```xml
-
-xml
 <!-- 올바른 intent-filter 구성 확인 -->
 <activity
     android:name=".DeepLinkActivity"
@@ -849,7 +772,6 @@ xml
               android:host="example.com" />
     </intent-filter>
 </activity>
-
 ```
 
 1. **App Links Assistant 활용**:
@@ -859,10 +781,7 @@ xml
 2. **다양한 시나리오 테스트**:
 
 ```kotlin
-
-kotlin
 class DeepLinkTestUtils {
     companion object {
         fun test
-
 ```
