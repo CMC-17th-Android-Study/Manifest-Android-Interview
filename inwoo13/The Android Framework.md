@@ -142,3 +142,44 @@ https://lead-whistle-2dd.notion.site/Category-0-The-Android-Framework-2106d503b2
 - **App Links**를 설정하면 브라우저 대신 앱이 자동으로 실행되며, 도메인 검증이 필요합니다.
 - **예외 처리 및 fallback**도 구현해 링크 데이터 누락/오류 시 앱이 안정적으로 동작하도록 해야 합니다.
 - 테스트는 ADB, 브라우저, Deep Link Tester 앱, App Links Assistant 도구 등을 활용해 전방위적으로 확인합니다.
+
+## Q) 16. What are tasks and back stack?
+- **Task**는 여러 Activity로 구성된 작업 단위이며, **back stack**은 LIFO 구조로 Activity를 관리합니다.
+- **standard**: 항상 새 인스턴스 생성.
+- **singleTop**: top에 있으면 재사용 (onNewIntent 호출).
+- **singleTask**: Task 내에 단 하나만 존재, 기존 인스턴스 앞으로 bring.
+- **singleInstance**: 해당 Activity는 **독립적인 Task**에만 존재.
+- **Intent Flag**로 런타임에 back stack 제어 가능:
+  - `NEW_TASK`: 새 Task 생성
+  - `CLEAR_TOP`: 해당 Activity 위의 것들 제거
+  - `NO_HISTORY`: back stack에 추가하지 않음
+- launchMode와 intent flag는 Activity 수명 및 내비게이션 흐름을 정밀하게 제어하는 핵심 도구
+
+## Q) 17. What's the purpose of Bundle?
+- Bundle은 컴포넌트 간 데이터를 전달하거나 일시적인 상태를 저장/복원하기 위해 사용되는 경량의 key-value 구조 데이터 객체
+- 목적
+  - 소량의 데이터를 효율적으로 전달(문자열, 숫자, Parcelable 등)
+  - Activity, Fragment, Service 간 통신
+  - 구성 변경(screen rotation 등) 시 UI 상태 보존
+  - 직렬화 가능한 데이터 저장 및 복원
+
+## Q) 18. How do you pass data between Activites or Fragments
+- Activity 간 데이터 잔달 ⇒ Intent의 putExtra() / getIntent() 사용
+- Frgament 간 데이터 전달 ⇒ arguments에 Bundle을 사용해 key-value 쌍 전달
+- Jetpack Navigation + Safe Args ⇒ nav_graph.xml에 인자 정의, 생성된 direction 클래스로 type-safe하게 전달 및 수신
+- Shared ViewModel (같은 Activity 내 Fragment 간) ⇒ activityViewModles()로 ViewModel 공유 → 생명주기 인식 + 느신한 결합 + 상태 보존
+- Fragment Result API ⇒ Fragment 간 일회성(one-time) 데이터 전달에 적합, setFragmentResult(), setFragmentResultListener() 사용
+
+## Q) 19. What happens to an Activity during configuration changes?
+- Activity는 피괴 후 재생성 됨
+- 이때 시스템은 리소스를 새롭게 로드하며, 데이터 손실을 방지하기 위해 상태 저장이 필요
+- 일시적 상태 ⇒ onSaveInstanceState() 사용, 입력값과 스크롤 위치 등을 사용
+- 지속적 상태 ⇒ ViewModel 또는 SavedStateHandle 사용, 로그인 상태 및 API 응답 결과 등
+
+## Q) 20. What is Activity Manager?
+- 시스템에서 실행 중인 **Activity, Task, Process, 메모리 상태**를 관리하는 서비스
+- 대표 메서드: `getMemoryInfo()`, `getRunningAppProcesses()`, `killBackgroundProcesses()`, `clearApplicationUserData()`
+- **메모리 누수 감지 도구**로, `ActivityManager`를 활용해 **메모리 상태 추적**함
+- 시스템이 **저메모리 상태**(`lowMemory == true`)일 때 대비 가능
+- 사용처: 캐시 제거, 백그라운드 작업 정리, UI 간소화 등 리소스 해제
+- `onTrimMemory()`와 함께 사용하면 더욱 효과적
